@@ -1,11 +1,13 @@
 from rest_framework.response import Response
-from contas.models import Aluno
-from contas.api.serializers import  RegisterAlunoSerializer, LoginSerializer
+from rest_framework import viewsets
+from contas.models import Aluno, Perfil
+from contas.api.serializers import  RegisterAlunoSerializer, LoginSerializer, PerfilSerilizer
 from rest_framework import status, generics
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -45,3 +47,12 @@ def login_aluno(request):
     if serializer.is_valid():
         return Response(serializer.validated_data['tokens'])
     return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
+
+
+
+# perdil do aluno
+
+class PerfilViewSet(viewsets.ModelViewSet):
+    queryset = Perfil.objects.all()
+    serializer_class = PerfilSerilizer
+    http_method_names = ['get', 'post']

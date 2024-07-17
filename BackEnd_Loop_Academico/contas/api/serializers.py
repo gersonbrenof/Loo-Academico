@@ -1,6 +1,16 @@
 from rest_framework import serializers
-from contas.models import Aluno
+from contas.models import Aluno, Perfil
 from rest_framework_simplejwt.tokens import RefreshToken
+
+class PerfilSerilizer(serializers.ModelSerializer):
+    class Meta:
+        nome_do_aluno = serializers.CharField(source = 'aluno.nomeALuno', read_only = True)
+        turma_aluno = serializers.CharField(source = 'turma.codicoTurma', read_only = True)
+        matricla_aluno = serializers.CharField(source = 'aluno.matricula', read_only = True)
+        model = Perfil
+        fields = ['fotoPerfil', 'aluno', 'turma', 'nome_do_aluno','turma_aluno', 'matricla_aluno' ]
+
+
 
 class AlunoSerializer(serializers.ModelSerializer):
     class Meta:

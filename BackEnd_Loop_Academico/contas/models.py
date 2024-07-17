@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.core.validators import RegexValidator
+from turma.models import Turma
 
 class AlunoManager(BaseUserManager):
     def create_user(self, nomeAluno, email, matricula, institucao, password=None, **extra_fields):
@@ -36,3 +37,11 @@ class Aluno(AbstractBaseUser):
 
     def __str__(self):
         return self.email
+class Perfil(models.Model):
+    fotoPerfil = models.ImageField(upload_to='fotos_perfil/', blank=True, null=True)
+    aluno = models.OneToOneField(Aluno, on_delete=models.CASCADE)
+    turma = models.ForeignKey(Turma, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.aluno.nomeAluno} - {self.aluno.matricula} - {self.turma.codicoTurma}'
+    
