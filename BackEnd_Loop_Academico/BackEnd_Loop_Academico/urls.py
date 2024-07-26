@@ -3,11 +3,13 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, Spec
 from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
-from contas.api.views import AlunoRegisterAPI, login_aluno
-from exercicio.api.views import CompiladorViewSet
+from contas.api.views import AlunoRegisterAPI, login_aluno,PerfilViewSet
+
 from rest_framework.routers import DefaultRouter
 router = DefaultRouter()
-router.register(r'compiladores', CompiladorViewSet)
+
+router.register(r"Perfil-aluno",PerfilViewSet, basename="perfil-aluno")
+
 
 
 
@@ -24,6 +26,7 @@ urlpatterns = [
     path('Api/login/', login_aluno, name='login-aluno'),
 
     path('turma/', include('turma.urls')),
+
     path('Forum', include('forum.urls')),
 
 

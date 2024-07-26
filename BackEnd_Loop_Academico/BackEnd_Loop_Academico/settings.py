@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     'exercicio',
     'forum',
     'materialApoio',
+    'emblemas',
+    'duvidas',
     
 
 ]
@@ -83,7 +85,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'BackEnd_Loop_Academico.wsgi.application'
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8000"
+    "http://localhost:8000",
+     "http://127.0.0.1:5500"
+
 ]
 
 # Database

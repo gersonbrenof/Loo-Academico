@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.core.validators import RegexValidator
 from turma.models import Turma
+from django.core.validators import RegexValidator
 
 class AlunoManager(BaseUserManager):
     def create_user(self, nomeAluno, email, matricula, institucao, password=None, **extra_fields):
@@ -29,18 +30,25 @@ class Aluno(AbstractBaseUser):
     institucao = models.CharField(max_length=100)
     matricula = models.CharField(max_length=10, unique=True, validators=[RegexValidator(regex='^\d+$', message='A matrícula deve conter apenas números.')])
     email = models.EmailField(unique=True)
+    turma = models.ForeignKey(Turma, on_delete=models.SET_NULL, null=True, blank=True)
 
     objects = AlunoManager()
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['nomeAluno', 'institucao', 'matricula']
 
+
+    def save(self, *args, **kwargs):
+        # valida se a turma existe antes de salva
+        if self.turma and not Turma.objects.filter(id=self.turma.id).exists():
+            raise ValueError('Turma inválida.')
+        super().save(*args, **kwargs)
     def __str__(self):
         return self.email
 class Perfil(models.Model):
     fotoPerfil = models.ImageField(upload_to='fotos_perfil/', blank=True, null=True)
     aluno = models.OneToOneField(Aluno, on_delete=models.CASCADE)
-    turma = models.ForeignKey(Turma, on_delete=models.CASCADE)
+    turma = models.ForeignKey(Turma, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return f'{self.aluno.nomeAluno} - {self.aluno.matricula} - {self.turma.codicoTurma}'

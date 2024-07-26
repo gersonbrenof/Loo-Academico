@@ -1,3 +1,5 @@
 from django.contrib import admin
+from exercicio.models import Exercicio
 
-# Register your models here.
+admin.site.register(Exercicio)
+

@@ -1,15 +1,22 @@
 from rest_framework import serializers
 from contas.models import Aluno, Perfil
 from rest_framework_simplejwt.tokens import RefreshToken
+from turma.models import Turma
 
-class PerfilSerilizer(serializers.ModelSerializer):
+class PerfilSerializer(serializers.ModelSerializer):
+    nome_do_aluno = serializers.CharField(source='aluno.nomeAluno', read_only=True)
+    turma_aluno = serializers.CharField(source='turma.codicoTurma', read_only=True)
+    matricula_aluno = serializers.CharField(source='aluno.matricula', read_only=True)
+
     class Meta:
-        nome_do_aluno = serializers.CharField(source = 'aluno.nomeALuno', read_only = True)
-        turma_aluno = serializers.CharField(source = 'turma.codicoTurma', read_only = True)
-        matricla_aluno = serializers.CharField(source = 'aluno.matricula', read_only = True)
         model = Perfil
-        fields = ['fotoPerfil', 'aluno', 'turma', 'nome_do_aluno','turma_aluno', 'matricla_aluno' ]
+        fields = ['fotoPerfil', 'aluno', 'turma', 'nome_do_aluno', 'turma_aluno', 'matricula_aluno']
 
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        # Adicione formatação ou organização personalizada aqui, se necessário
+        return representation
 
 
 class AlunoSerializer(serializers.ModelSerializer):

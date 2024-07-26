@@ -1,10 +1,16 @@
 # compilador/models.py
 from django.db import models
 
-class Compilador(models.Model):
-    codigo_c = models.TextField()
-    entradas = models.TextField(default='')  # Entradas opcionais para o programa C
-    resultado_execucao = models.TextField(blank=True, null=True)
+class Exercicio(models.Model):
+    STATUS_CHOICES =[
+        ('N', 'Náo Respondido'),
+        ('R', 'Respondido'),
+    ]
+    titulo = models.CharField(max_length=300)
+    descricao = models.TextField()
+    data_criacao = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='N')
+    numeroDoExercico = models.PositiveIntegerField()
 
-    def __str__(self):
-        return f"Compilador ID: {self.id}"
+    def __str__(self) -> str:
+        return self.titulo

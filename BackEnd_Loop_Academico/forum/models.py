@@ -6,13 +6,9 @@ class Forum(models.Model):
     descricao = models.TextField(blank=True, null=True)
     data_inico = models.DateTimeField(auto_now_add=True)
     aluno = models.ForeignKey(Aluno, on_delete=models.CASCADE)
-    anonimo = models.BooleanField(default=False)
-    def __str__(self):
-        if self.anonimo:
-            return f"{self.titulo} (Anônimo)"
-        else:
-            return f"{self.titulo} ({self.aluno.nomeAluno})"
     
+    def __str__(self) -> str:
+        return self.titulo
 
 class ResponderTopico(models.Model):
     forum = models.ForeignKey(Forum, on_delete=models.CASCADE)

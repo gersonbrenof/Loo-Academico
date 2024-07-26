@@ -1,14 +1,16 @@
 from rest_framework.response import Response
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
 from contas.models import Aluno, Perfil
-from contas.api.serializers import  RegisterAlunoSerializer, LoginSerializer, PerfilSerilizer
+from contas.api.serializers import  RegisterAlunoSerializer, LoginSerializer, PerfilSerializer
 from rest_framework import status, generics
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-
-
+from django.shortcuts import get_object_or_404
+from turma.models import Turma
 
 @method_decorator(csrf_exempt, name='dispatch')
 @permission_classes([AllowAny])
@@ -54,5 +56,6 @@ def login_aluno(request):
 
 class PerfilViewSet(viewsets.ModelViewSet):
     queryset = Perfil.objects.all()
-    serializer_class = PerfilSerilizer
-    http_method_names = ['get', 'post']
+    serializer_class = PerfilSerializer
+    http_method_names = ['get', 'put']
+
