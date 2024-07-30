@@ -7,22 +7,21 @@ from .serializers import VincularTurmaSerializer, Turma
 from rest_framework.permissions import IsAuthenticated
 from contas.models import Perfil
 from django.http import Http404
-from rest_framework import generics
-
+from rest_framework import generics, permissions
+from django.core.exceptions import PermissionDenied
 
 class AtualizarMinhaTurmaView(generics.UpdateAPIView):
     serializer_class = VincularTurmaSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]  # Assegure-se de que o usuário está autenticado
 
     def get_object(self):
         # Obtém o aluno logado
-        return self.request.user
-
-    def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        return Response(serializer.data)
+        user = self.request.user
+        try:
+            aluno = Aluno.objects.get(email=user.email)
+        except Aluno.DoesNotExist:
+            raise  PermissionDenied("Usuário não associado a um aluno.")
+        return aluno
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
    

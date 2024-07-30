@@ -3,20 +3,20 @@ from turma.models import Turma
 from contas.models import Aluno
 
 class VincularTurmaSerializer(serializers.ModelSerializer):
-    codicoTurma = serializers.CharField(write_only=True)
+
+    codicoTurma = serializers.CharField()  # Certifique-se de que isso corresponde ao campo esperado
 
     class Meta:
         model = Aluno
-        fields = ['codicoTurma']
+        fields = ['codicoTurma']  # Inclua apenas os campos que existem no modelo Aluno
 
     def validate_codicoTurma(self, value):
-        if not Turma.objects.filter(codicoTurma=value).exists():
-            raise serializers.ValidationError("O código da turma não existe.")
+        if not Turma.objects.filter(codigo=value).exists():
+            raise serializers.ValidationError("Código de turma inválido.")
         return value
 
     def update(self, instance, validated_data):
-        turma_codigo = validated_data.get('codicoTurma')
-        turma = Turma.objects.get(codicoTurma=turma_codigo)
+        turma = Turma.objects.get(codigo=validated_data['codicoTurma'])
         instance.turma = turma
         instance.save()
         return instance
