@@ -24,7 +24,7 @@ urlpatterns = [
 
 
     path('admin/', admin.site.urls),
-    path('Api/Cadastrar/', AlunoRegisterAPI.as_view(), name='aluno-register'),
+    path('api/cadastrar/', AlunoRegisterAPI.as_view(), name='aluno-register'),
     path('Api/login/', LoginView.as_view(), name='login'),
     path('perfil/<int:pk>/atualizar-foto-perfil/', AtualizarFotoPerfilView.as_view(), name='atualizar-foto-perfil'),
     path('api/protected/', ProtectedView.as_view(), name='protected'),

@@ -3,16 +3,21 @@ from rest_framework import status
 from django.urls import reverse
 from contas.models import Aluno
 from rest_framework_simplejwt.tokens import RefreshToken
-
+from django.contrib.auth.models import User
 
 class AlunoAPITests(APITestCase):
     def setUp(self):
-        self.aluno = Aluno.objects.create_user(
-            email='aluno@example.com',
+        # Cria um usuário e perfil associados
+        self.aluno = Aluno.objects.create(
+            user=User.objects.create_user(
+                username='aluno@example.com',
+                email='aluno@example.com',
+                password='senha123'
+            ),
             nomeAluno='Aluno Teste',
             matricula='123456',
             instituicao='Instituição Teste',
-            password='senha123'
+            email='aluno@example.com'
         )
         self.login_url = reverse('login')  # Ajuste a URL conforme necessário
         self.protected_url = reverse('protected')  # Ajuste a URL conforme necessário
@@ -29,4 +34,4 @@ class AlunoAPITests(APITestCase):
         response = self.client.get(self.protected_url)
         
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['message'], 'This is a protected endpoint')
+        self.assertEqual(response.data.get('message'), 'This is a protected endpoint')

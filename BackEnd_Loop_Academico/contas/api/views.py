@@ -1,31 +1,41 @@
 from rest_framework.response import Response
-from rest_framework import viewsets, status, generics
+from rest_framework import viewsets, status, generics, views
 from rest_framework.permissions import IsAuthenticated
+from rest_framework import serializers
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
 from contas.models import Aluno, Perfil
-from contas.api.serializers import UserCreateSerializer,AlunoSerializer, PerfilSerializer, AtualizarFotoPerfilSerializer, LoginSerializer
+from contas.api.serializers import (
+    UserCreateSerializer,
+    AlunoSerializer,
+    UserSerializer,
+    PerfilSerializer,
+    AtualizarFotoPerfilSerializer,
+    LoginSerializer
+)
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import AllowAny
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework import serializers
+from rest_framework_simplejwt.tokens import RefreshToken, Token
+
 # View para registro do aluno
-
-
 class AlunoRegisterAPI(generics.CreateAPIView):
-    permission_classes = [AllowAny]
     queryset = Aluno.objects.all()
-    serializer_class = UserCreateSerializer
+    serializer_class = AlunoSerializer
+    permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            user = self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            aluno = serializer.save()
+            # Cria um token para o usuário após o cadastro
+            user = aluno.user
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'user': UserSerializer(user).data,
+                'refresh': str(refresh),
+                'access': str(refresh.access_token)
+            }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def perform_create(self, serializer):
-        return serializer.save()
 
 # Função para login do aluno
 class LoginView(generics.GenericAPIView):
@@ -35,28 +45,28 @@ class LoginView(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            email = serializer.validated_data.get('email')
-            password = serializer.validated_data.get('password')
-
-            try:
-                user = Aluno.objects.get(email=email)
-                if user.check_password(password):
-                    refresh = RefreshToken.for_user(user)
-                    return Response({
-                        'refresh': str(refresh),
-                        'access': str(refresh.access_token),
-                    })
-                else:
-                    return Response({"detail": "Invalid password"}, status=status.HTTP_401_UNAUTHORIZED)
-            except Aluno.DoesNotExist:
-                return Response({"detail": "User does not exist"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(serializer.validated_data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 # ViewSet para Perfil do aluno
 class PerfilViewSet(viewsets.ModelViewSet):
     queryset = Perfil.objects.all()
     serializer_class = PerfilSerializer
     http_method_names = ['get', 'put']
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Obtém o usuário autenticado
+        user = self.request.user
+
+        # Busca o aluno associado ao usuário
+        try:
+            aluno = Aluno.objects.get(user=user)
+        except Aluno.DoesNotExist:
+            return Perfil.objects.none()  # Se não encontrar o aluno, retorna um queryset vazio
+
+        # Filtra os perfis pelo aluno
+        return Perfil.objects.filter(aluno=aluno)
 
 # View para atualizar a foto de perfil
 class AtualizarFotoPerfilView(generics.UpdateAPIView):
