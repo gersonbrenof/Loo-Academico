@@ -23,5 +23,17 @@ class AtualizarMinhaTurmaView(generics.UpdateAPIView):
             raise  PermissionDenied("Usuário não associado a um aluno.")
         return aluno
     def patch(self, request, *args, **kwargs):
-        return self.partial_update(request, *args, **kwargs)
-   
+        aluno = self.get_object()
+
+        # verificar se o aluno ja tem seu codico em uma turma
+        if aluno.turma:
+            return Response({"detail": f"O aluno já está associado à turma {aluno.turma.codicoTurma}"}, status=status.HTTP_400_BAD_REQUEST)
+       
+        # realizar a atulizaçao da turma
+
+        serializer = self.get_serializer(aluno, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"detail": "Aluno associado a truma com sucesso"}, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

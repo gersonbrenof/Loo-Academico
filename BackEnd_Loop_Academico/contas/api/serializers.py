@@ -16,23 +16,18 @@ class PerfilSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Perfil
-        fields = ['id', 'fotoPerfil', 'aluno', 'turma', 'nome_do_aluno', 'turma_aluno', 'matricula_aluno']
+        fields = ['id', 'fotoPerfil', 'aluno', 'nome_do_aluno', 'turma_aluno', 'matricula_aluno']
 
     def get_turma_aluno(self, obj):
-        if obj.turma:
-            return obj.turma.codicoTurma
+        # Verifica se o aluno está vinculado a uma turma
+        if obj.aluno and obj.aluno.turma:
+            return obj.aluno.turma.codicoTurma
         return 'Sem turma'
-
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        if instance.turma is None:
-            representation.pop('turma_aluno', None)
-        return representation
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'email', 'first_name', 'last_name']
+        fields = ['id', 'email']
 
 
 class AlunoSerializer(serializers.ModelSerializer):
@@ -42,7 +37,7 @@ class AlunoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Aluno
-        fields = ['id', 'user', 'nomeAluno', 'instituicao', 'matricula', 'email', 'turma', 'is_active', 'is_staff', 'password']
+        fields = ['id', 'nomeAluno', 'instituicao', 'matricula', 'email', 'is_active', 'is_staff', 'password']
 
     def create(self, validated_data):
         password = validated_data.pop('password', None)
@@ -93,7 +88,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Aluno
-        fields = ['nomeAluno', 'instituicao', 'matricula', 'email', 'password', 'turma']
+        fields = ['nomeAluno', 'instituicao', 'matricula', 'email', 'password']
 
     def create(self, validated_data):
         user = User.objects.create_user(
@@ -106,7 +101,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
             nomeAluno=validated_data['nomeAluno'],
             matricula=validated_data['matricula'],
             instituicao=validated_data['instituicao'],
-            turma=validated_data.get('turma')
+        
         )
         return aluno
 class LoginSerializer(serializers.Serializer):

@@ -7,7 +7,8 @@ class ForumSerializer(serializers.ModelSerializer):
         fields = ['id', 'titulo', 'descricao','data_inico', 'aluno']
     
 class ResponderTopicoSerializer(serializers.ModelSerializer):
-    forum = ForumSerializer(read_only=True)
+    forum = serializers.PrimaryKeyRelatedField(queryset=Forum.objects.all(), required=True)
+    forumdetalhe = ForumSerializer(source='forum',read_only=True)
     class Meta:
         model = ResponderTopico
-        fields = ['id', 'forum', 'respostaForum', 'data_resposta']
+        fields = ['id', 'forum', 'forumdetalhe', 'respostaForum', 'data_resposta', 'aluno']

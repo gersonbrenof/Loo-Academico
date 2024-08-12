@@ -7,4 +7,5 @@ router = DefaultRouter()
 urlpatterns = [
    path('', include(router.urls)),
    path('vincular-codico/', AtualizarMinhaTurmaView.as_view(), name='atualizar-minha-turma'),
+
 ]

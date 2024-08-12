@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_spectacular',
     'corsheaders',
-    'contas',
+    'contas.apps.ContasConfig',
     'knox',
     'turma',
     'exercicio',
@@ -91,9 +91,12 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
     "http://127.0.0.1:5500",
     "http://127.0.0.1:8000",
+    "http://localhost:5173",
+    'http://localhost:3000',
+    "http://127.0.0.1:5500",
 
 ]
-
+CORS_ALLOW_CREDENTIALS = True
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 

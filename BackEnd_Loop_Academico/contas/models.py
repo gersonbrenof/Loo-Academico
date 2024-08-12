@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from turma.models import Turma
 from django.core.validators import RegexValidator
@@ -14,7 +15,7 @@ def create_user_with_email(email, password):
     )
     return user
 class Aluno(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE )
+    user = models.OneToOneField(User, on_delete=models.CASCADE,  default=1)
     nomeAluno = models.CharField(max_length=100)
     instituicao = models.CharField(max_length=100)
     matricula = models.CharField(
@@ -32,8 +33,15 @@ class Aluno(models.Model):
         self.user.username = self.email
         self.user.email = self.email
         self.user.save()
-        super(Aluno,self).save(*args, **kwargs)
+        
+      
 
+        if self.pk and self.turma:
+            aluno_atual = Aluno.objects.get(pk=self.pk)
+            if aluno_atual.turma and aluno_atual.turma != self.turma:
+                raise ValidationError('o aluno ja esat vinculadoa uma turma. Nao e possivel vincular outra turma')
+        super(Aluno,self).save(*args, **kwargs)
+        Perfil.objects.get_or_create(aluno=self)
     def __str__(self):
         return self.email
 class Perfil(models.Model):

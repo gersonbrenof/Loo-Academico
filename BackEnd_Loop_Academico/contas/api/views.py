@@ -5,6 +5,7 @@ from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from contas.models import Aluno, Perfil
+from contas.permissions import IsAdminOrAuthenticated
 from contas.api.serializers import (
     UserCreateSerializer,
     AlunoSerializer,
@@ -56,17 +57,20 @@ class PerfilViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Obtém o usuário autenticado
-        user = self.request.user
+            user = self.request.user
+            
+            # Permite que administradores vejam todos os perfis
+            if user.is_staff:
+                return Perfil.objects.all()
 
-        # Busca o aluno associado ao usuário
-        try:
-            aluno = Aluno.objects.get(user=user)
-        except Aluno.DoesNotExist:
-            return Perfil.objects.none()  # Se não encontrar o aluno, retorna um queryset vazio
+            # Busca o aluno associado ao usuário
+            try:
+                aluno = Aluno.objects.get(user=user)
+            except Aluno.DoesNotExist:
+                return Perfil.objects.none()  # Se não encontrar o aluno, retorna um queryset vazio
 
-        # Filtra os perfis pelo aluno
-        return Perfil.objects.filter(aluno=aluno)
+            # Filtra os perfis pelo aluno
+            return Perfil.objects.filter(aluno=aluno)
 
 # View para atualizar a foto de perfil
 class AtualizarFotoPerfilView(generics.UpdateAPIView):
