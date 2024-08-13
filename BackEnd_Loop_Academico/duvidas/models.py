@@ -4,7 +4,7 @@ class Duvidas(models.Model):
     titulo = models.CharField(max_length=250, null=False, blank=False)
     duvidaAluno = models.TextField()
     data_criacao = models.DateField(auto_now_add=True)
-    status_respsota = models.BooleanField(default=False)
+    status_resposta = models.BooleanField(default=False)
     tematica = models.CharField(max_length=200) # adcionar um forey quei da lista de tarefa modifcar depois
     aluno = models.ForeignKey( Aluno, on_delete=models.CASCADE, null=True, blank=True)
     anonimo = models.BooleanField(default=True)
