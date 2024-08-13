@@ -1,3 +1,3 @@
 from django.contrib import admin
-
-# Register your models here.
+from emblemas.models import Emblema
+admin.site.register(Emblema)
