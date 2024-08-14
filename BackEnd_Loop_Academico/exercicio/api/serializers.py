@@ -4,7 +4,7 @@ from exercicio.models import Exercicio, ListaExercicio, Sintaxe, Problema, Discr
 class ExercicioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Exercicio
-        fields = ['id', 'titulo', 'descricao', 'data_criacao', 'status', 'numeroDoExercicio']
+        fields = ['id', 'titulo', 'descricao', 'data_criacao', 'status', 'numeroDoExercicio', 'entradaExemplo', 'saidaExemplo']
 
 
 
@@ -13,11 +13,12 @@ class ListaExercicioSerializer(serializers.ModelSerializer):
         model = ListaExercicio
         fields = ['id', 'tiltulo', 'numeroExercicio', 'dataCriacao', 'status', 'dificuldade', 'totalExercicio']
 
-class ResponderExercicioSerilizer(serializers.ModelSerializer):
+class ResponderExercicioSerializer(serializers.ModelSerializer):
     exercicio = serializers.PrimaryKeyRelatedField(queryset=Exercicio.objects.all(), required=True)
+    aluno = serializers.HiddenField(default =serializers.CurrentUserDefault())
     class Meta:
-        fields = ['id', 'exercicio','aluno', 'codicoDoExercicio', 'resultado','pontuacao', 'dataEnvio' ]
-
+        model = ResponderExercicio
+        fields = ['id', 'exercicio', 'aluno', 'resultado', 'codigoDoExercicio', 'pontuacao', 'dataEnvio']
 class SintaxeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sintaxe

@@ -10,7 +10,8 @@ class Exercicio(models.Model):
     data_criacao = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='N')
     numeroDoExercicio = models.PositiveIntegerField()
-
+    entradaExemplo = models.TextField(default="", null=True, blank=True)  
+    saidaExemplo = models.TextField(default="")
     def __str__(self) -> str:
         return self.titulo
 
@@ -26,6 +27,7 @@ class ListaExercicio(models.Model):
     status = models.BooleanField(default=False)
     dificuldade = models.CharField(max_length=1, choices=DIFFICULTY_CHOICES, default='F')
     totalExercicio = models.ForeignKey(Exercicio, on_delete=models.CASCADE)
+    
 
     def __str__(self):
         return self.titulo
@@ -38,7 +40,9 @@ class ResponderExercicio(models.Model):
     pontuacao = models.PositiveIntegerField(blank=True, null=True)
     dataEnvio = models.DateField(auto_now_add=True)
 
-
+    def __str__(self):
+        return self.codigoDoExercicio
+    
 
 class Sintaxe(models.Model):
     titulo = models.CharField(max_length=100, null=False, blank=False)
