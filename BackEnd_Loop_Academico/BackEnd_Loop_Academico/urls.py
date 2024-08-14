@@ -29,10 +29,14 @@ urlpatterns = [
     path('perfil/<int:pk>/atualizar-foto-perfil/', AtualizarFotoPerfilView.as_view(), name='atualizar-foto-perfil'),
     path('api/protected/', ProtectedView.as_view(), name='protected'),
     path('turma/', include('turma.urls')),
-
+# forum
     path('Forum', include('forum.urls')),
 
+# duvidas
+    path('duvidas/', include('duvidas.urls')),
 
+    # exercico
+    path('exercicio/', include('exercicio.urls')),
     path('', include(router.urls),)
    
 ]
