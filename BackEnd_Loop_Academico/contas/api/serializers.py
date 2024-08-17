@@ -31,7 +31,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class AlunoSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    password = serializers.CharField(write_only=True, required=False, allow_blank=True,  min_length=8)
     is_active = serializers.BooleanField(required=False, default=True)
     is_staff = serializers.BooleanField(required=False, default=False)
 
