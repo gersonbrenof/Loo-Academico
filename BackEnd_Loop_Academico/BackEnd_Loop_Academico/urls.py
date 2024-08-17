@@ -37,7 +37,17 @@ urlpatterns = [
 
     # exercico
     path('exercicio/', include('exercicio.urls')),
-    path('', include(router.urls),)
+    
+    # material de apoio
+    path('material-apoio/', include('materialApoio.urls')),
+
+    #emblemas
+    path('emblemas/',include('emblemas.urls')),
+
+
+
+
+    path('', include(router.urls)),
    
 ]
 if settings.DEBUG:

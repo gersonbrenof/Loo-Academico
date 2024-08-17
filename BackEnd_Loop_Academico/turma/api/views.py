@@ -37,3 +37,18 @@ class AtualizarMinhaTurmaView(generics.UpdateAPIView):
             return Response({"detail": "Aluno associado a truma com sucesso"}, status=status.HTTP_200_OK)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class VerificarAssociacaoTurmaView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        try:
+            aluno = Aluno.objects.get(email=user.email)
+        except Aluno.DoesNotExist:
+            raise PermissionDenied("Usuário não associado a um aluno.")
+        
+        if aluno.turma:
+            return Response({"detail": f"O aluno já está associado à turma {aluno.turma.codicoTurma}"}, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "O aluno não está associado a nenhuma turma."}, status=status.HTTP_200_OK)
