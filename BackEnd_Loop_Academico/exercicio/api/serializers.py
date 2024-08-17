@@ -7,12 +7,15 @@ class ExercicioSerializer(serializers.ModelSerializer):
         fields = ['id', 'titulo', 'descricao', 'data_criacao', 'status', 'numeroDoExercicio', 'entradaExemplo', 'saidaExemplo']
 
 
-
 class ListaExercicioSerializer(serializers.ModelSerializer):
+    totalExercicio = serializers.PrimaryKeyRelatedField(queryset=Exercicio.objects.all())
+
     class Meta:
         model = ListaExercicio
-        fields = ['id', 'tiltulo', 'numeroExercicio', 'dataCriacao', 'status', 'dificuldade', 'totalExercicio']
+        fields = ['id', 'titulo', 'numeroExercicio', 'dataCriacao', 'status', 'dificuldade', 'totalExercicio']
 
+
+        
 class ResponderExercicioSerializer(serializers.ModelSerializer):
     exercicio = serializers.PrimaryKeyRelatedField(queryset=Exercicio.objects.all(), required=True)
     aluno = serializers.HiddenField(default =serializers.CurrentUserDefault())

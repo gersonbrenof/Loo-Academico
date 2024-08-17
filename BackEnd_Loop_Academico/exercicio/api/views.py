@@ -9,8 +9,17 @@ from rest_framework.decorators import api_view, APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
 from exercicio.models import ResponderExercicio, Exercicio
-from exercicio.api.serializers import ResponderExercicioSerializer, ExercicioSerializer
-# class ListaExercicoViewSet:
+from exercicio.api.serializers import ResponderExercicioSerializer, ExercicioSerializer, ListaExercicioSerializer
+from exercicio.api.serializers import Sintaxe, SintaxeSerializer
+class ListaExercicoViewSet(viewsets.ModelViewSet):
+    queryset = ResponderExercicio.objects.all()
+    serializer_class = ListaExercicioSerializer
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['get']
+   
+    def get_queryset(self):
+        return super().get_queryset()
+
 class ExercicioViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Exercicio.objects.all()
     serializer_class = ExercicioSerializer
@@ -18,6 +27,7 @@ class ExercicioViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         return super().get_queryset()
+
 class ResponderExercicioView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -86,10 +96,14 @@ class ResponderExercicioView(APIView):
                 responder_exercicio.save()
 
                 # Atualizar o status do exercício para "Respondido"
+                if exercicio.status == 'R':
+                    return JsonResponse({'status': 'Erro', 'detail': 'Exercício já respondido.'}, status=status.HTTP_400_BAD_REQUEST)
+    
                 exercicio.status = 'R'
                 exercicio.save()
+             
 
-                return JsonResponse({'status': 'Resposta enviada', 'pontuacao': pontuacao}, status=status.HTTP_201_CREATED)
+                return JsonResponse({'status': 'Resposta enviada', 'pontuacao': pontuacao, 'Resultado': resultado}, status=status.HTTP_201_CREATED)
 
             finally:
                 # Limpar arquivos temporários
@@ -101,3 +115,12 @@ class ResponderExercicioView(APIView):
                         print(f"Erro ao remover arquivo {filename}: {e}")
         
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class SintaxeViewSet(viewsets.ModelViewSet):
+    queryset = Sintaxe.objects.all()
+    serializer_class = SintaxeSerializer
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['get']
+
+    def get_queryset(self):
+        return super().get_queryset()

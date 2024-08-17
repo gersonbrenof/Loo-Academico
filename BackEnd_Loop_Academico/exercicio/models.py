@@ -26,8 +26,7 @@ class ListaExercicio(models.Model):
     dataCriacao = models.DateTimeField(auto_now_add=True)
     status = models.BooleanField(default=False)
     dificuldade = models.CharField(max_length=1, choices=DIFFICULTY_CHOICES, default='F')
-    totalExercicio = models.ForeignKey(Exercicio, on_delete=models.CASCADE)
-    
+    totalExercicio = models.ManyToManyField(Exercicio)
 
     def __str__(self):
         return self.titulo
