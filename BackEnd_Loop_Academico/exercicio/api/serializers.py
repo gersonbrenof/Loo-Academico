@@ -1,20 +1,59 @@
 from rest_framework import serializers
 from exercicio.models import Exercicio, ListaExercicio, Sintaxe, Problema, DiscricaoDetalhada, DicaAluno, ResponderExercicio
+from contas.models import Aluno
 
-class ExercicioSerializer(serializers.ModelSerializer):
+class ExercicioStatusSerializer(serializers.ModelSerializer):
+    
+    respondido = serializers.SerializerMethodField()
     class Meta:
+      
         model = Exercicio
-        fields = ['id', 'titulo', 'descricao', 'data_criacao', 'status', 'numeroDoExercicio', 'entradaExemplo', 'saidaExemplo']
+        fields = ['id','titulo', 'numeroDoExercicio','status','respondido']
 
+    def get_respondido(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return 'Nao Respondido'
+        try:
+            aluno = request.user.aluno
+            # Verifica se o exercício foi respondido pelo aluno
+            responded = ResponderExercicio.objects.filter(aluno=aluno, exercicio=obj).exists()
+            return 'Respondido' if responded else 'Não Respondido'
+        except Aluno.DoesNotExist:
+            return 'Não Respondido'
+        
 
 class ListaExercicioSerializer(serializers.ModelSerializer):
-    totalExercicio = serializers.PrimaryKeyRelatedField(queryset=Exercicio.objects.all())
-
+    #exercicios = ExercicioSerializer(many=True, read_only=True)
+    total_exercicios = serializers.IntegerField(source = 'toltaExcercicios', read_only = True)
     class Meta:
         model = ListaExercicio
-        fields = ['id', 'titulo', 'numeroExercicio', 'dataCriacao', 'status', 'dificuldade', 'totalExercicio']
+        fields = ['id', 'titulo', 'numeroExercicio', 'dataCriacao', 'dificuldade','total_exercicios']
 
 
+class ExercicioSerializer(serializers.ModelSerializer):
+    lista = ListaExercicioSerializer()
+    class Meta:
+        
+        model = Exercicio
+        fields = ['id', 'titulo', 'descricao', 'data_criacao', 'numeroDoExercicio', 'entradaExemplo', 'saidaExemplo','lista']
+
+class ListaExercicioStatusSerilaizer(serializers.ModelSerializer):
+    status = serializers.SerializerMethodField()
+    class Meta:
+        model = ListaExercicio
+        fields = ['id', 'status']
+    def get_status(self, obj):
+        # Verifica se todos os exercícios da lista estão respondidos
+        todos_respondidos = all(exercicio.status == 'R' for exercicio in obj.exercicios.all())
+        if todos_respondidos:
+            return 'Indisponível'  # Indisponível
+        return 'Disponível'  # Disponível
+    def update(self, instance, validated_data):
+        # Atualizar o status da lista quando for necessário
+        instance = super().update(instance, validated_data)
+        instance.verificar_respostas()  # Chama o método para verificar o status
+        return instance
         
 class ResponderExercicioSerializer(serializers.ModelSerializer):
     exercicio = serializers.PrimaryKeyRelatedField(queryset=Exercicio.objects.all(), required=True)
@@ -22,6 +61,7 @@ class ResponderExercicioSerializer(serializers.ModelSerializer):
     class Meta:
         model = ResponderExercicio
         fields = ['id', 'exercicio', 'aluno', 'resultado', 'codigoDoExercicio', 'pontuacao', 'dataEnvio']
+        read_only_fields = ['dataEnvio']
 class SintaxeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sintaxe
@@ -38,11 +78,11 @@ class DiscricaoDetalhadaSerializer(serializers.ModelSerializer):
         fields = ['id', 'descricao']
 
 
-class DicaAluno(serializers.ModelSerializer):
+class DicaAlunoSerilizer(serializers.ModelSerializer):
     discricaoDetalhada = DiscricaoDetalhadaSerializer(read_only=True)
     sintaxe = SintaxeSerializer(read_only = True)
     problema = ProblemaSerilizer(read_only = True)
     exercicio = ExercicioSerializer(read_only = True)
     class Meta:
         model = DicaAluno
-        fields = ['id', 'codigoApoio', 'descricaoDetalhada', 'sintaxe', 'problema', 'exercicio']
+        fields = ['id', 'codigoApoio', 'discricaoDetalhada', 'sintaxe', 'problema', 'exercicio']
