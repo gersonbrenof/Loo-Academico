@@ -4,7 +4,7 @@ from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
 from contas.api.views import AlunoRegisterAPI, LoginView,PerfilViewSet, AtualizarFotoPerfilView
-from contas.api.views import ProtectedView
+
 
 from rest_framework.routers import DefaultRouter
 router = DefaultRouter()
@@ -27,7 +27,6 @@ urlpatterns = [
     path('api/cadastrar/', AlunoRegisterAPI.as_view(), name='aluno-register'),
     path('Api/login/', LoginView.as_view(), name='login'),
     path('perfil/<int:pk>/atualizar-foto-perfil/', AtualizarFotoPerfilView.as_view(), name='atualizar-foto-perfil'),
-    path('api/protected/', ProtectedView.as_view(), name='protected'),
     path('turma/', include('turma.urls')),
 # forum
     path('Forum', include('forum.urls')),
@@ -44,7 +43,8 @@ urlpatterns = [
     #emblemas
     path('emblemas/',include('emblemas.urls')),
 
-
+  # DESENPENHO
+    path('desempenho/',include('desempenho.urls')),
 
 
     path('', include(router.urls)),

@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'emblemas',
     'duvidas',
     'rest_framework_simplejwt',
+    'desempenho',
     
 
 ]
