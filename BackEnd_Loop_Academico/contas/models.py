@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from turma.models import Turma
 from django.core.validators import RegexValidator
-
+from exercicio.models import Exercicio
 from django.contrib.auth.models import User
 
 def create_user_with_email(email, password):
@@ -27,11 +27,16 @@ class Aluno(models.Model):
     turma = models.ForeignKey(Turma, on_delete=models.SET_NULL, null=True, blank=True, default="")
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)  # Necessário para permissões e acesso ao admin
+    exercicio_respondido = models.ForeignKey('exercicio.Exercicio', on_delete=models.SET_NULL, null=True, blank=True)
 
 
+    def clean(self):
+        if not self.email.lower().endswith('@alunos.edu.ufersa.br'):
+            raise ValidationError('Este email nao pertence a instituicao UFERSA deve ter o dominio @alunos.edu.ufersa.br')
     def save(self, *args, **kwargs) :
         self.user.username = self.email
         self.user.email = self.email
+        self.clean()
         self.user.save()
         
       

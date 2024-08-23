@@ -38,7 +38,16 @@ class AlunoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Aluno
         fields = ['id', 'nomeAluno', 'instituicao', 'matricula', 'email', 'is_active', 'is_staff', 'password']
-
+    def validate_email(self, value):
+         if not value.lower().endswith('@alunos.edu.ufersa.br'):
+            raise serializers.ValidationError("O email deve ter o domínio @alunos.edu.ufersa.br.")
+         return value
+    def validate_password(self, value):
+        if value and len(value) < 8:
+            raise serializers.ValidationError("A senha deve ter pelo menos 8 caracteres.")
+        if ' ' in value:
+            raise serializers.ValidationError("A senha não pode conter espaços em branco.")
+        return value
     def create(self, validated_data):
         password = validated_data.pop('password', None)
         user_data = {

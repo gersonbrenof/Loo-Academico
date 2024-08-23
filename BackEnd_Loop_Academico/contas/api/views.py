@@ -19,6 +19,11 @@ from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken, Token
 
 # View para registro do aluno
+def validar_senha(senha):
+    if len(senha) < 8 or ' ' in senha:
+        return False
+    return True
+
 class AlunoRegisterAPI(generics.CreateAPIView):
     queryset = Aluno.objects.all()
     serializer_class = AlunoSerializer
@@ -27,6 +32,10 @@ class AlunoRegisterAPI(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
+            senha = request.data.get('password')
+            if senha and not validar_senha(senha):
+                return Response({'password': ['A senha deve ter pelo menos 8 caracteres e não conter espaços']}, status=status.HTTP_400_BAD_REQUEST)
+
             aluno = serializer.save()
             # Cria um token para o usuário após o cadastro
             user = aluno.user
@@ -36,6 +45,7 @@ class AlunoRegisterAPI(generics.CreateAPIView):
                 'refresh': str(refresh),
                 'access': str(refresh.access_token)
             }, status=status.HTTP_201_CREATED)
+        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # Função para login do aluno
@@ -88,9 +98,4 @@ class AtualizarFotoPerfilView(generics.UpdateAPIView):
             raise PermissionDenied("Você não tem permissão para atualizar este perfil.")
         serializer.save()
 
-# View protegida para testes
-class ProtectedView(generics.GenericAPIView):
-    permission_classes = [IsAuthenticated]
 
-    def get(self, request, *args, **kwargs):
-        return Response({"message": "This is a protected endpoint"}, status=status.HTTP_200_OK)
