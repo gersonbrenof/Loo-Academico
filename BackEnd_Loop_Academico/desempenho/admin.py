@@ -1,3 +1,4 @@
 from django.contrib import admin
+from desempenho.models import Desempenho
 
-# Register your models here.
+admin.site.register(Desempenho)
