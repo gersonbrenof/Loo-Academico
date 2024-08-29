@@ -39,8 +39,8 @@ class AlunoSerializer(serializers.ModelSerializer):
         model = Aluno
         fields = ['id', 'nomeAluno', 'instituicao', 'matricula', 'email', 'is_active', 'is_staff', 'password']
     def validate_email(self, value):
-         if not value.lower().endswith('@alunos.edu.ufersa.br'):
-            raise serializers.ValidationError("O email deve ter o domínio @alunos.edu.ufersa.br.")
+         if not value.lower().endswith('@alunos.ufersa.edu.br'):
+            raise serializers.ValidationError("O email deve ter o domínio @alunos.ufersa.edu.br.")
          return value
     def validate_password(self, value):
         if value and len(value) < 8:

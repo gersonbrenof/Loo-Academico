@@ -31,8 +31,8 @@ class Aluno(models.Model):
 
 
     def clean(self):
-        if not self.email.lower().endswith('@alunos.edu.ufersa.br'):
-            raise ValidationError('Este email nao pertence a instituicao UFERSA deve ter o dominio @alunos.edu.ufersa.br')
+        if not self.email.lower().endswith('@alunos.ufersa.edu.br'):
+            raise ValidationError('Este email nao pertence a instituicao UFERSA deve ter o dominio @alunos.ufersa.edu.br')
     def save(self, *args, **kwargs) :
         self.user.username = self.email
         self.user.email = self.email

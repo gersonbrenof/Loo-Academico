@@ -40,17 +40,29 @@ class ExercicioSerializer(serializers.ModelSerializer):
 
 class ListaExercicioStatusSerilaizer(serializers.ModelSerializer):
     status = serializers.SerializerMethodField()
+    total_exercicios = serializers.SerializerMethodField()  # Adicionando o campo calculado
+    exercicios = ExercicioStatusSerializer(many=True)
+
     class Meta:
         model = ListaExercicio
-        fields = ['id', 'status']
+        fields = ['id', 'titulo', 'numeroExercicio', 'dataCriacao', 'dificuldade', 'total_exercicios', 'status', 'exercicios']
+
     def get_status(self, obj):
-        # Verifica se todos os exercícios da lista estão respondidos
-        todos_respondidos = all(exercicio.status == 'R' for exercicio in obj.exercicios.all())
+        # Verifica se todos os exercícios da lista foram respondidos
+        todos_respondidos = all(
+            ResponderExercicio.objects.filter(aluno=self.context['request'].user.aluno, exercicio=exercicio).exists()
+            for exercicio in obj.exercicios.all()
+        )
         if todos_respondidos:
-            return 'Indisponível'  # Indisponível
-        return 'Disponível'  # Disponível
+            return 'Indisponível'  # Todos respondidos
+        return 'Disponível'  # Pelo menos um não respondido
+
+    def get_total_exercicios(self, obj):
+        # Calcula o total de exercícios na lista
+        return obj.exercicios.count()
+
     def update(self, instance, validated_data):
-        # Atualizar o status da lista quando for necessário
+        # Atualizar o status da lista quando necessário
         instance = super().update(instance, validated_data)
         instance.verificar_respostas()  # Chama o método para verificar o status
         return instance

@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
 from materialApoio.models import VideoYoutube, ArquivoPdf
 from materialApoio.api.serializers import VideoYoutubeSerializer, ArquivoPdfSerializer, MaterialApoio, MaterialApoioSerializer
+from materialApoio.api.serializers import MapaMental, MapaMentalSerializer
 class MaterialApoioViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = MaterialApoio.objects.all()
     serializer_class = MaterialApoioSerializer
@@ -12,6 +13,10 @@ class MaterialApoioViewSet(viewsets.ReadOnlyModelViewSet):
 class VideoYoutubeViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = VideoYoutube.objects.all()
     serializer_class = VideoYoutubeSerializer
+
+class MapaMentalViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = MapaMental.objects.all()
+    serializer_class = MapaMentalSerializer
 
 class ArquivoPdfViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ArquivoPdf.objects.all()

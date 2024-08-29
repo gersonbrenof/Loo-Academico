@@ -13,39 +13,34 @@ class DesempenhoDetailView(generics.RetrieveAPIView):
         if aluno is None:
             raise PermissionDenied("Usuário não está associado a um aluno.")
 
-        # Verifique se o aluno está associado a uma turma
         if aluno.turma is None:
             raise PermissionDenied("Aluno não está associado a uma turma.")
 
-        # Obtém o desempenho do aluno na turma
-        desempenho = Desempenho.objects.filter(aluno=aluno, turma=aluno.turma).first()
-        
-        if not desempenho:
-            # Crie um novo desempenho se não existir
-            desempenho = Desempenho(
-                aluno=aluno,
-                turma=aluno.turma,
-                pontuacaoAluno=0,
-                tentativas=0,
-                status='Não Responido e Não enviado',
-                total_respostas=0,
-                respostas_corretas=0
-            )
-            desempenho.save()
+        desempenho, created = Desempenho.objects.get_or_create(
+            aluno=aluno,
+            turma=aluno.turma,
+            defaults={
+                'pontuacaoAluno': 0,
+                'tentativas': 0,
+                'status': 'Não Respondido e Não enviado',
+                'total_respostas': 0,
+                'respostas_corretas': 0
+            }
+        )
 
-        # Atualize o status do desempenho baseado nas respostas enviadas
         self.atualizar_status_desempenho(desempenho)
         
         return desempenho
     
     def atualizar_status_desempenho(self, desempenho):
-        # Filtra todas as respostas do aluno (não relacionado à turma ou exercício específico)
         total_respostas = ResponderExercicio.objects.filter(
-            aluno=desempenho.aluno
+            aluno=desempenho.aluno,
+            exercicio__turma=desempenho.turma
         ).count()
 
         respostas_corretas = ResponderExercicio.objects.filter(
-            aluno=desempenho.aluno, 
+            aluno=desempenho.aluno,
+            exercicio__turma=desempenho.turma,
             resultado='Correto'
         ).count()
 

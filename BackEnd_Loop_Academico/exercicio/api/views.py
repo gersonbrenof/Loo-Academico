@@ -176,7 +176,7 @@ class ResponderExercicioView(APIView):
                     desempenho.total_respostas += 1
                     if pontuacao > 0:
                         desempenho.respostas_corretas += 1
-                    desempenho.pontuacaoAluno += pontuacao
+                    desempenho.pontuacaoAluno = (desempenho.pontuacaoAluno or 0) + pontuacao
                 else:
                     desempenho.total_respostas = 1
                     desempenho.respostas_corretas = 1 if pontuacao > 0 else 0
@@ -200,11 +200,3 @@ class ResponderExercicioView(APIView):
                         print(f"Erro ao remover arquivo {filename}: {e}")
         
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-class SintaxeViewSet(viewsets.ModelViewSet):
-    queryset = Sintaxe.objects.all()
-    serializer_class = SintaxeSerializer
-    permission_classes = [IsAuthenticated]
-    http_method_names = ['get']
-
-    def get_queryset(self):
-        return super().get_queryset()

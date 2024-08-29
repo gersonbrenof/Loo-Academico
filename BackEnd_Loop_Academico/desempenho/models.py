@@ -12,9 +12,9 @@ class Desempenho(models.Model):
     
     aluno = models.ForeignKey(Aluno, on_delete=models.CASCADE)
     turma = models.ForeignKey(Turma, on_delete=models.CASCADE)
-    pontuacaoAluno = models.PositiveIntegerField()
+    pontuacaoAluno = models.PositiveIntegerField(default=0)
     data_criacao = models.DateTimeField(auto_now_add=True)
-    tentativas = models.IntegerField()
+    tentativas = models.IntegerField(default=0)
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='Não Responido e Não enviado')
     observacao = models.CharField(max_length=500, blank=True, null=True)
     avaliacao = models.CharField(max_length=100, blank=True, null=True)
