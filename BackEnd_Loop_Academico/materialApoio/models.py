@@ -27,11 +27,10 @@ class VideoYoutube(models.Model):
 class ArquivoPdf(models.Model):
     material_apoio = models.ForeignKey(MaterialApoio, on_delete=models.CASCADE, related_name='arquivos_pdf')
     arquivo = models.FileField(upload_to='pdfs/')
-    mapaMental = models.ImageField(upload_to='mapas_mentais/', null=True, blank=True)
     def __str__(self):
         return str(self.arquivo)
 class MapaMental(models.Model):
-    material_apoio = models.ForeignKey(MaterialApoio, on_delete=models.CASCADE, related_name='Mapa_mental')
+    material_apoio = models.ForeignKey(MaterialApoio, on_delete=models.CASCADE, related_name='mapas_mentais')
     mapaMental = models.ImageField(upload_to='mapas_mentais/', null=True, blank=True)
     def __str__(self):
         return self.mapaMental

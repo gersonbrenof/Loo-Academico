@@ -15,7 +15,7 @@ class VideoYoutubeSerializer(serializers.ModelSerializer):
 class ArquivoPdfSerializer(serializers.ModelSerializer):
     class Meta:
         model = ArquivoPdf
-        fields = ['id', 'arquivo', 'mapaMental']
+        fields = ['id', 'arquivo']
 
 class MaterialApoioSerializer(serializers.ModelSerializer):
     videos_youtube = VideoYoutubeSerializer(many=True, read_only=True)
@@ -25,3 +25,9 @@ class MaterialApoioSerializer(serializers.ModelSerializer):
     class Meta:
         model = MaterialApoio
         fields = ['id', 'titulo', 'descricao', 'quantidade_conteudo', 'videos_youtube', 'arquivos_pdf', 'mapa_mental']
+    def update(self, instance, validated_data):
+        # Atualizar o material de apoio com os dados fornecidos
+        instance = super().update(instance, validated_data)
+        # Calcular a quantidade de conteúdo
+        instance.calcular_quantidade_conteudo()
+        return instance

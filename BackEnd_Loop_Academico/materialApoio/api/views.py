@@ -3,12 +3,41 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
+from rest_framework.decorators import action
 from materialApoio.models import VideoYoutube, ArquivoPdf
 from materialApoio.api.serializers import VideoYoutubeSerializer, ArquivoPdfSerializer, MaterialApoio, MaterialApoioSerializer
 from materialApoio.api.serializers import MapaMental, MapaMentalSerializer
 class MaterialApoioViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = MaterialApoio.objects.all()
     serializer_class = MaterialApoioSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        # Obtém o objeto material de apoio usando o método original
+        material_apoio = self.get_object()
+
+        # Calcula e atualiza a quantidade de conteúdo
+        material_apoio.calcular_quantidade_conteudo()
+
+        # Serializa o objeto atualizado
+        serializer = self.get_serializer(material_apoio)
+
+        # Retorna a resposta com os dados atualizados
+        return Response(serializer.data)
+
+    def list(self, request, *args, **kwargs):
+        # Obtém a lista de materiais de apoio
+        queryset = self.get_queryset()
+
+        # Calcula e atualiza a quantidade de conteúdo para cada material de apoio
+        for material_apoio in queryset:
+            material_apoio.calcular_quantidade_conteudo()
+            material_apoio.save()  # Garante que a quantidade de conteúdo seja salva
+
+        # Serializa a lista de materiais de apoio atualizados
+        serializer = self.get_serializer(queryset, many=True)
+
+        # Retorna a resposta com os dados atualizados
+        return Response(serializer.data)
 
 class VideoYoutubeViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = VideoYoutube.objects.all()
@@ -42,3 +71,4 @@ class MaterialApoioSearchView(APIView):
         
         # Retorna os dados serializados como resposta
         return Response(serializer.data, status=status.HTTP_200_OK)
+    

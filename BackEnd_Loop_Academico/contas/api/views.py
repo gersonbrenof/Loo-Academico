@@ -85,25 +85,26 @@ class PerfilViewSet(viewsets.ModelViewSet):
 # View para atualizar a foto de perfil
 class AtualizarFotoPerfilView(generics.UpdateAPIView):
     queryset = Perfil.objects.all()
-    
+
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return PerfilSerializer
         return AtualizarFotoPerfilSerializer
 
     def get_object(self):
-        # Obtém o perfil do usuário logado
+        # Obtém o aluno correspondente ao usuário logado
         user = self.request.user
         try:
-            perfil = Perfil.objects.get(aluno=user)
+            aluno = Aluno.objects.get(user=user)
+            perfil = Perfil.objects.get(aluno=aluno)
+        except Aluno.DoesNotExist:
+            raise PermissionDenied("Aluno não encontrado para o usuário logado.")
         except Perfil.DoesNotExist:
-            raise PermissionDenied("Perfil não encontrado para o usuário logado.")
+            raise PermissionDenied("Perfil não encontrado para o aluno logado.")
         return perfil
 
     def perform_update(self, serializer):
         perfil = self.get_object()
-        if perfil.aluno != self.request.user:
+        if perfil.aluno.user != self.request.user:
             raise PermissionDenied("Você não tem permissão para atualizar este perfil.")
         serializer.save()
-
-
