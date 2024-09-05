@@ -1,6 +1,10 @@
 from rest_framework import serializers
 from duvidas.models import Duvidas
 
+class DuvidasExbirSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Duvidas
+        fields = ['id', 'titulo',  'data_criacao', 'status_resposta']
 class DuvidasSerializer(serializers.ModelSerializer):
     class Meta:
         model = Duvidas

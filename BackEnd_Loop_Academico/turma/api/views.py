@@ -12,32 +12,30 @@ from django.core.exceptions import PermissionDenied
 
 class AtualizarMinhaTurmaView(generics.UpdateAPIView):
     serializer_class = VincularTurmaSerializer
-    permission_classes = [IsAuthenticated]  # Assegure-se de que o usuário está autenticado
+    permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        # Obtém o aluno logado
         user = self.request.user
         try:
             aluno = Aluno.objects.get(email=user.email)
         except Aluno.DoesNotExist:
-            raise  PermissionDenied("Usuário não associado a um aluno.")
+            raise PermissionDenied("Usuário não associado a um aluno.")
         return aluno
+
     def patch(self, request, *args, **kwargs):
         aluno = self.get_object()
 
-        # verificar se o aluno ja tem seu codico em uma turma
+        # Verifica se o aluno já está associado a uma turma
         if aluno.turma:
             return Response({"detail": f"O aluno já está associado à turma {aluno.turma.codicoTurma}"}, status=status.HTTP_400_BAD_REQUEST)
-       
-        # realizar a atulizaçao da turma
 
+        # Atualiza a turma do aluno
         serializer = self.get_serializer(aluno, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response({"detail": "Aluno associado a truma com sucesso"}, status=status.HTTP_200_OK)
+            return Response({"success": True, "detail": "Aluno associado à turma com sucesso"}, status=status.HTTP_200_OK)
         
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+        return Response({"success": False, "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 class VerificarAssociacaoTurmaView(APIView):
     permission_classes = [IsAuthenticated]
 

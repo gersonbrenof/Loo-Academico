@@ -28,19 +28,18 @@ class DesempenhoDetailView(generics.RetrieveAPIView):
             }
         )
 
+        # Chame a função de atualização de status do desempenho
         self.atualizar_status_desempenho(desempenho)
-        
+
         return desempenho
-    
+
     def atualizar_status_desempenho(self, desempenho):
         total_respostas = ResponderExercicio.objects.filter(
-            aluno=desempenho.aluno,
-            exercicio__turma=desempenho.turma
+            aluno=desempenho.aluno
         ).count()
 
         respostas_corretas = ResponderExercicio.objects.filter(
             aluno=desempenho.aluno,
-            exercicio__turma=desempenho.turma,
             resultado='Correto'
         ).count()
 
@@ -54,4 +53,5 @@ class DesempenhoDetailView(generics.RetrieveAPIView):
         else:
             desempenho.status = 'Resolução Incorreta'
 
+        # Salve o desempenho atualizado
         desempenho.save()

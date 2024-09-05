@@ -50,9 +50,24 @@ class ListaTodosEmblemasView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Emblema.objects.all()
+        aluno = self.request.user.aluno
 
-    
+        if aluno is None:
+            return Emblema.objects.none()
+
+        # Recupera todos os emblemas
+        emblemas = Emblema.objects.all()
+
+        # Atualiza o status dos emblemas para o aluno atual
+        for emblema in emblemas:
+            if emblema.aluno != aluno:
+                # Emblema ainda não foi desbloqueado para o aluno
+                emblema.status = 'nao_desbloqueado'
+            else:
+                # Emblema foi desbloqueado para o aluno
+                emblema.status = 'desbloqueado'
+
+        return emblemas  
 
 class DesbloquearEmblemaView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
