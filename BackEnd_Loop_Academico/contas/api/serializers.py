@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 from turma.models import Turma
 from django.contrib.auth import authenticate
+from desempenho.models import Desempenho
 class AtualizarFotoPerfilSerializer(serializers.ModelSerializer):
     class Meta:
         model = Perfil
@@ -12,12 +13,19 @@ class AtualizarFotoPerfilSerializer(serializers.ModelSerializer):
 class PerfilSerializer(serializers.ModelSerializer):
     nome_do_aluno = serializers.CharField(source='aluno.nomeAluno', read_only=True)
     turma_aluno = serializers.SerializerMethodField()
+    respostas_corretas = serializers.SerializerMethodField()
     matricula_aluno = serializers.CharField(source='aluno.matricula', read_only=True)
 
     class Meta:
         model = Perfil
-        fields = ['id', 'fotoPerfil', 'aluno', 'nome_do_aluno', 'turma_aluno', 'matricula_aluno']
-
+        fields = ['id', 'fotoPerfil', 'aluno', 'nome_do_aluno', 'turma_aluno', 'matricula_aluno', 'respostas_corretas']
+    def get_respostas_corretas(self, obj):
+        try:
+            # Obter o desempenho do aluno associado ao perfil
+            desempenho = Desempenho.objects.get(aluno=obj.aluno, turma=obj.aluno.turma)
+            return desempenho.respostas_corretas
+        except Desempenho.DoesNotExist:
+            return 0 
     def get_turma_aluno(self, obj):
         # Verifica se o aluno está vinculado a uma turma
         if obj.aluno and obj.aluno.turma:
