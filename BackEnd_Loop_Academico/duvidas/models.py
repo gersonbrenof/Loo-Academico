@@ -1,10 +1,14 @@
 from django.db import models
 from contas.models import Aluno
 class Duvidas(models.Model):
+    STATUS_CHOICES = [
+        ('AGUARDADANDO RESPOSTA', 'AGUARDADANDO RESPOSTA'),
+        ('RESPONDIDA', 'RESPONDIDA'),
+    ]
     titulo = models.CharField(max_length=250, null=False, blank=False)
     duvidaAluno = models.TextField()
     data_criacao = models.DateField(auto_now_add=True)
-    status_resposta = models.BooleanField(default=False)
+    status_resposta = models.CharField(max_length=40, choices=STATUS_CHOICES, default='AGUARDADANDO RESPOSTA')
     tematica = models.CharField(max_length=200) # adcionar um forey quei da lista de tarefa modifcar depois
     aluno = models.ForeignKey( Aluno, on_delete=models.CASCADE, null=True, blank=True)
     anonimo = models.BooleanField(default=True)
