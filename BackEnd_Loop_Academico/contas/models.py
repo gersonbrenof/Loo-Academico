@@ -6,6 +6,8 @@ from turma.models import Turma
 from django.core.validators import RegexValidator
 from exercicio.models import Exercicio
 from django.contrib.auth.models import User
+import datetime
+
 
 def create_user_with_email(email, password):
     user = User.objects.create_user(
@@ -53,9 +55,13 @@ class Perfil(models.Model):
     fotoPerfil = models.ImageField(upload_to='fotos_perfil/', blank=True, null=True)
     aluno = models.OneToOneField(Aluno, on_delete=models.CASCADE)
     turma = models.ForeignKey(Turma, on_delete=models.SET_NULL, null=True, blank=True)
+    # data_criacao = models.DateField(auto_now_add=True)  adciona depois
 
     def __str__(self):
         # Verifica se 'turma' não é None antes de acessar 'codicoTurma'
         turma_codigo = self.turma.codicoTurma if self.turma else 'Sem turma'
         return f'{self.aluno.nomeAluno} - {turma_codigo}'
+    def total_emblemas_desbloqueados(self):
+        # Retorna o total de emblemas desbloqueados do aluno associado
+        return self.aluno.emblema.filter(status='desbloqueado').count()
     

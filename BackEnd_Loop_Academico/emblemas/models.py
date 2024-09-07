@@ -17,5 +17,6 @@ class Emblema(models.Model):
     aluno = models.ForeignKey(Aluno, on_delete=models.CASCADE, related_name='emblema', null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='nao_desbloqueado')
 
+
     def __str__(self):
         return self.tituloEmblema

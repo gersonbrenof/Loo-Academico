@@ -3,7 +3,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, Spec
 from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
-from contas.api.views import AlunoRegisterAPI, LoginView,PerfilViewSet, AtualizarFotoPerfilView
+from contas.api.views import AlunoRegisterAPI, LoginView,PerfilViewSet, LogoutView, AtualizarFotoPerfilView
 
 
 from rest_framework.routers import DefaultRouter
@@ -26,6 +26,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/cadastrar/', AlunoRegisterAPI.as_view(), name='aluno-register'),
     path('Api/login/', LoginView.as_view(), name='login'),
+    path("Logout/", LogoutView.as_view(), name="Logout"),
     path('perfil/atualizar-foto-perfil/', AtualizarFotoPerfilView.as_view(), name='atualizar-foto-perfil'),
     path('turma/', include('turma.urls')),
 # forum

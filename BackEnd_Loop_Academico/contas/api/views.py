@@ -6,6 +6,8 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from contas.models import Aluno, Perfil
 from contas.permissions import IsAdminOrAuthenticated
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.views import APIView
 from contas.api.serializers import (
     UserCreateSerializer,
     AlunoSerializer,
@@ -108,3 +110,14 @@ class AtualizarFotoPerfilView(generics.UpdateAPIView):
         if perfil.aluno.user != self.request.user:
             raise PermissionDenied("Você não tem permissão para atualizar este perfil.")
         serializer.save()
+
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        # Se estiver usando cookies para armazenar o token:
+        response = Response(status=status.HTTP_204_NO_CONTENT)
+        response.delete_cookie('access_token')
+        response.delete_cookie('refresh_token')
+        return response

@@ -15,10 +15,11 @@ class PerfilSerializer(serializers.ModelSerializer):
     turma_aluno = serializers.SerializerMethodField()
     respostas_corretas = serializers.SerializerMethodField()
     matricula_aluno = serializers.CharField(source='aluno.matricula', read_only=True)
+    total_emblemas_desbloqueados = serializers.SerializerMethodField()
 
     class Meta:
         model = Perfil
-        fields = ['id', 'fotoPerfil', 'aluno', 'nome_do_aluno', 'turma_aluno', 'matricula_aluno', 'respostas_corretas']
+        fields = ['id', 'fotoPerfil', 'aluno', 'nome_do_aluno', 'turma_aluno', 'matricula_aluno', 'respostas_corretas', 'total_emblemas_desbloqueados']
     def get_respostas_corretas(self, obj):
         try:
             # Obter o desempenho do aluno associado ao perfil
@@ -26,6 +27,9 @@ class PerfilSerializer(serializers.ModelSerializer):
             return desempenho.respostas_corretas
         except Desempenho.DoesNotExist:
             return 0 
+    def get_total_emblemas_desbloqueados(self, obj):
+        # Usa o método que criamos no modelo Perfil
+        return obj.total_emblemas_desbloqueados()
     def get_turma_aluno(self, obj):
         # Verifica se o aluno está vinculado a uma turma
         if obj.aluno and obj.aluno.turma:
