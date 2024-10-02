@@ -5,6 +5,7 @@ class MaterialApoio(models.Model):
     titulo = models.CharField(max_length=100)
     descricao = models.TextField(blank=True, null=True)
     quantidade_conteudo = models.IntegerField(default=0)
+    visualizacoes = models.PositiveIntegerField(default=0)
     def calcular_quantidade_conteudo(self):
         total_videos = self.videos_youtube.count()
         total_pdfs = self.arquivos_pdf.count()

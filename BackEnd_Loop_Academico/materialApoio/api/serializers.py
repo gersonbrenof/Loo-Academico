@@ -24,7 +24,7 @@ class MaterialApoioSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MaterialApoio
-        fields = ['id', 'titulo', 'descricao', 'quantidade_conteudo', 'videos_youtube', 'arquivos_pdf', 'mapa_mental']
+        fields = ['id', 'titulo', 'descricao', 'quantidade_conteudo', 'videos_youtube', 'arquivos_pdf', 'mapa_mental', 'visualizacoes']
     def update(self, instance, validated_data):
         # Atualizar o material de apoio com os dados fornecidos
         instance = super().update(instance, validated_data)

@@ -15,7 +15,11 @@ class MaterialApoioViewSet(viewsets.ReadOnlyModelViewSet):
         # Obtém o objeto material de apoio usando o método original
         material_apoio = self.get_object()
 
-        # Calcula e atualiza a quantidade de conteúdo
+        # Incrementar o contador de visualizações
+        material_apoio.visualizacoes += 1
+        material_apoio.save()  # Salva a nova contagem de visualizações no banco de dados
+
+        # Calcula e atualiza a quantidade de conteúdo (se necessário)
         material_apoio.calcular_quantidade_conteudo()
 
         # Serializa o objeto atualizado
@@ -38,6 +42,7 @@ class MaterialApoioViewSet(viewsets.ReadOnlyModelViewSet):
 
         # Retorna a resposta com os dados atualizados
         return Response(serializer.data)
+    
 
 class VideoYoutubeViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = VideoYoutube.objects.all()
