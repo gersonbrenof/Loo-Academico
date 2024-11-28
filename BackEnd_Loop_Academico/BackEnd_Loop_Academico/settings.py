@@ -167,11 +167,15 @@ SIMPLE_JWT = {
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'BackEnd_Loop_Academico',
-    'DESCRIPTION': 'Your project description',
-    'VERSION': '1.0.0',
+'TITLE': 'Loop Acadêmico - Backend para Ensina Algoritmo',
+    'DESCRIPTION': (
+        'API desenvolvida para apoiar estudantes, especialmente calouros, '
+        'no aprendizado da disciplina de Algoritmos, com foco em C. '
+        'Inclui funcionalidades para exercícios, dúvidas, fóruns, desempenho e muito mais. '
+        'Desenvolvido por Gerson Breno Fagundes de Oliveira.'
+    ),
+    'VERSION': '2.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
-    # OTHER SETTINGS
 }
 STATIC_URL = 'static/'
 MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'mediafiles')
