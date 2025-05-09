@@ -102,101 +102,80 @@ class ExercicioViewSet(viewsets.ReadOnlyModelViewSet):
         lista.atualizar_total_exercicios()
 class ResponderExercicioView(APIView):
     permission_classes = [IsAuthenticated]
+    
+    
+    def post(self, request, exercicio_id):
+        try:
+            exercicio = Exercicio.objects.get(id=exercicio_id)
+        except Exercicio.DoesNotExist:
+            return JsonResponse({'erro': 'Exercício não encontrado.'}, status=404)
 
-    def post(self, request):
-        serializer = ResponderExercicioSerializer(data=request.data, context={'request': request})
+        data = request.data.copy()
+        data['exercicio'] = exercicio.id
 
-        if serializer.is_valid():
-            aluno = request.user.aluno
-            if aluno is None:
-                return JsonResponse({'status': 'Erro', 'detail': 'Usuário não está associado a um aluno.'}, status=status.HTTP_400_BAD_REQUEST)
-            
-            exercicio_id = serializer.validated_data['exercicio'].id
-            codigo_aluno = serializer.validated_data['codigoDoExercicio']
+        serializer = ResponderExercicioSerializer(data=data, context={'request': request})
 
-            try:
-                exercicio = Exercicio.objects.get(id=exercicio_id)
-            except Exercicio.DoesNotExist:
-                return JsonResponse({'status': 'Erro', 'detail': 'Exercício não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            entrada = exercicio.entradaExemplo
-            saida_esperada = exercicio.saidaExemplo
+        aluno = request.user.aluno
+        codigo = serializer.validated_data['codigoDoExercicio']
 
-            try:
-                with open('temp_program.c', 'w') as file:
-                    file.write(codigo_aluno)
+        try:
+            with open('temp.c', 'w') as f:
+                f.write(codigo)
 
-                compile_process = subprocess.run(
-                    ['gcc', 'temp_program.c', '-o', 'temp_program'],
-                    capture_output=True,
-                    text=True
-                )
-                
-                if compile_process.returncode != 0:
-                    return JsonResponse({'status': 'Erro ao compilar código', 'error': compile_process.stderr}, status=status.HTTP_400_BAD_REQUEST)
+            compile = subprocess.run(['gcc', 'temp.c', '-o', 'temp.out'], capture_output=True, text=True)
+            if compile.returncode != 0:
+                return JsonResponse({'erro': 'Erro de compilação', 'detalhes': compile.stderr}, status=400)
 
-                try:
-                    exec_process = subprocess.run(
-                        './temp_program',
-                        input=entrada,
-                        text=True,
-                        capture_output=True,
-                        timeout=120
-                    )
-                    saida_aluno = exec_process.stdout.strip()
-                except subprocess.TimeoutExpired:
-                    return JsonResponse({'status': 'Erro', 'detail': 'Tempo de execução excedido.'}, status=status.HTTP_400_BAD_REQUEST)
-                except Exception as e:
-                    return JsonResponse({'status': 'Erro ao executar código', 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            run = subprocess.run(
+                ['./temp.out'],
+                input=exercicio.entradaExemplo,
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
 
-                pontuacao = 10 if saida_aluno == saida_esperada.strip() else 0
-                resultado = 'Correto' if pontuacao > 0 else 'Incorreto'
-                
-                resposta_existente = ResponderExercicio.objects.filter(exercicio=exercicio, aluno=aluno).first()
-                
-                if resposta_existente:
-                    resposta_existente.codigoDoExercicio = codigo_aluno
-                    resposta_existente.resultado = resultado
-                    resposta_existente.pontuacao = pontuacao
-                    resposta_existente.save()
-                else:
-                    resposta_existente = ResponderExercicio(
-                        exercicio=exercicio,
-                        aluno=aluno,
-                        codigoDoExercicio=codigo_aluno,
-                        resultado=resultado,
-                        pontuacao=pontuacao
-                    )
-                    resposta_existente.save()
+            saida_obtida = run.stdout.strip()
+            saida_esperada = exercicio.saidaExemplo.strip()
+            resultado = 'Correto' if saida_obtida == saida_esperada else 'Incorreto'
+            pontuacao = 10 if resultado == 'Correto' else 0
 
-                # Atualizar ou criar o desempenho
-                desempenho, created = Desempenho.objects.get_or_create(aluno=aluno, turma=aluno.turma)
+        except subprocess.TimeoutExpired:
+            return JsonResponse({'erro': 'Tempo de execução excedido'}, status=400)
 
-                if not created:
-                    desempenho.total_respostas += 1
-                    if pontuacao > 0:
-                        desempenho.respostas_corretas += 1
-                    desempenho.pontuacaoAluno = (desempenho.pontuacaoAluno or 0) + pontuacao
-                else:
-                    desempenho.total_respostas = 1
-                    desempenho.respostas_corretas = 1 if pontuacao > 0 else 0
-                    desempenho.pontuacaoAluno = pontuacao
+        except Exception as e:
+            return JsonResponse({'erro': 'Erro ao executar código', 'detalhes': str(e)}, status=400)
 
-                # Atualizar outros campos do desempenho
-                desempenho.tentativas += 1
-                desempenho.save()
+        finally:
+            for f in ['temp.c', 'temp.out']:
+                if os.path.exists(f):
+                    os.remove(f)
 
-                exercicio.status = 'Respondido' if ResponderExercicio.objects.filter(exercicio=exercicio, aluno=aluno).exists() else 'Não Respondido'
-                exercicio.save()
+        resposta, created = ResponderExercicio.objects.update_or_create(
+            exercicio=exercicio,
+            aluno=aluno,
+            defaults={
+                'codigoDoExercicio': codigo,
+                'resultado': resultado,
+                'pontuacao': pontuacao,
+            }
+        )
 
-                return JsonResponse({'status': 'Resposta enviada', 'pontuacao': pontuacao, 'resultado': resultado}, status=status.HTTP_201_CREATED)
+        desempenho, _ = Desempenho.objects.get_or_create(aluno=aluno, turma=aluno.turma)
+        desempenho.total_respostas += 1
+        desempenho.tentativas += 1
+        if resultado == 'Correto':
+            desempenho.respostas_corretas += 1
+            desempenho.pontuacaoAluno = (desempenho.pontuacaoAluno or 0) + pontuacao
+        desempenho.save()
 
-            finally:
-                for filename in ['temp_program.c', 'temp_program']:
-                    try:
-                        if os.path.exists(filename):
-                            os.remove(filename)
-                    except Exception as e:
-                        print(f"Erro ao remover arquivo {filename}: {e}")
-        
-        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        exercicio.status = 'Respondido'
+        exercicio.save()
+
+        return Response({
+            'mensagem': 'Resposta enviada com sucesso.',
+            'resultado': resultado,
+            'pontuacao': pontuacao
+        }, status=201)

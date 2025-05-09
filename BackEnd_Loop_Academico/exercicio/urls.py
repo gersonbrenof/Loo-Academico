@@ -11,7 +11,7 @@ router.register(r'status-da-lista-exercicio', ListaExericioStatusViewSet, basena
 
 urlpatterns = [
    
-    path('responder-exercicio/', ResponderExercicioView.as_view(), name='responder_exercicio'),
+   path('exercicio/responder-exercicio/<int:exercicio_id>/', ResponderExercicioView.as_view()),
     path('DicaAluno/', DicaALunoListView.as_view(), name='dicaaluno' ),
      path('', include(router.urls)),
 ]

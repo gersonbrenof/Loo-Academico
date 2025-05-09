@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'corsheaders',
     'contas.apps.ContasConfig',
-    'knox',
     'turma',
     'exercicio',
     'forum',
