@@ -62,6 +62,7 @@ class Perfil(models.Model):
         turma_codigo = self.turma.codicoTurma if self.turma else 'Sem turma'
         return f'{self.aluno.nomeAluno} - {turma_codigo}'
     def total_emblemas_desbloqueados(self):
+        from emblemas.models import EmblemaAluno
         # Retorna o total de emblemas desbloqueados do aluno associado
-        return self.aluno.emblema.filter(status='desbloqueado').count()
+        return EmblemaAluno.objects.filter(aluno=self.aluno, status='desbloqueado').count()
     
