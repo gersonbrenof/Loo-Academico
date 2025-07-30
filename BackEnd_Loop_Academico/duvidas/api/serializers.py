@@ -4,7 +4,7 @@ from duvidas.models import Duvidas
 class DuvidasExbirSerializer(serializers.ModelSerializer):
     class Meta:
         model = Duvidas
-        fields = ['id', 'titulo',  'data_criacao', 'status_resposta']
+        fields = ['id', 'titulo',  'data_criacao', 'status_resposta', 'duvidaAluno']
 class DuvidasSerializer(serializers.ModelSerializer):
     aluno_nome = serializers.CharField(source='aluno.nomeAluno', read_only=True, default="Anônimo")
     
