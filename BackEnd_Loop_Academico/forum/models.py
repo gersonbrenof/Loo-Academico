@@ -6,7 +6,7 @@ class Forum(models.Model):
     descricao = models.TextField(blank=True, null=True)
     data_inico = models.DateTimeField(auto_now_add=True)
     aluno = models.ForeignKey(Aluno, on_delete=models.CASCADE, null=True, blank=True)
-    categoria = models.ForeignKey(ListaExercicio, on_delete=models.CASCADE, default=1)
+    categoria = models.CharField(max_length=50, blank=False, null=False)
     def __str__(self) -> str:
         return self.titulo
 

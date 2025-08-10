@@ -13,10 +13,9 @@ class ForumExibirSerilizer(serializers.ModelSerializer):
             return obj.aluno.perfil.fotoPerfil.url
         return None
 class ForumSerializer(serializers.ModelSerializer):
-    categoria_nome = serializers.CharField(source='categoria.titulo', read_only=True)
     class Meta:
         model = Forum
-        fields = ['id', 'titulo', 'descricao','data_inico', 'categoria_nome']
+        fields = ['id', 'titulo', 'descricao','data_inico', 'categoria']
     
 class ResponderTopicoSerializer(serializers.ModelSerializer):
     forum = serializers.PrimaryKeyRelatedField(queryset=Forum.objects.all(), required=True)
