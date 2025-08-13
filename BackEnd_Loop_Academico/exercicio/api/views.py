@@ -17,12 +17,12 @@ from exercicio.api.serializers import DicaAlunoSerilizer, DicaAluno
 from contas.models import Aluno, User
 from desempenho.models import Desempenho
 from datetime import datetime, timedelta
-class DicaALunoListView(generics.ListAPIView):
+class DicaAlunoViewSet(viewsets.ModelViewSet):
     queryset = DicaAluno.objects.all()
     serializer_class = DicaAlunoSerilizer
     permission_classes = [IsAuthenticated]
 
-
+    http_method_names = ['get']  # limita apenas ao GET
 class ExercicioStatusViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ExercicioStatusSerializer
     permission_classes = [IsAuthenticated]

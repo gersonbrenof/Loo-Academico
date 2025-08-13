@@ -7,11 +7,13 @@ class Forum(models.Model):
     data_inico = models.DateTimeField(auto_now_add=True)
     aluno = models.ForeignKey(Aluno, on_delete=models.CASCADE, null=True, blank=True)
     categoria = models.CharField(max_length=50, blank=False, null=False)
+    resposta_destaque = models.ForeignKey('ResponderTopico', null=True, blank=True, on_delete=models.SET_NULL, related_name='forum_destaque')
+
     def __str__(self) -> str:
         return self.titulo
 
 class ResponderTopico(models.Model):
-    forum = models.ForeignKey(Forum, on_delete=models.CASCADE)
+    forum = models.ForeignKey(Forum, on_delete=models.CASCADE, related_name='respostas')
     respostaForum = models.TextField()
     data_resposta = models.DateTimeField(auto_now_add=True)
     aluno = models.ForeignKey(Aluno, on_delete=models.CASCADE, null =True, blank=True)
