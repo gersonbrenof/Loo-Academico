@@ -76,4 +76,26 @@ class MaterialApoioSearchView(APIView):
         
         # Retorna os dados serializados como resposta
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+class MaterialApoioAdvancedSearchView(APIView):
+    """
+    Busca por Material de Apoio incluindo títulos de Mapas Mentais, PDFs e Vídeos do YouTube.
+    """
+    def get(self, request, *args, **kwargs):
+        query = request.query_params.get('titulo', '').strip()
+
+        if query:
+            materiais = MaterialApoio.objects.filter(
+                Q(titulo__icontains=query) |
+                Q(mapas_mentais__titulo__icontains=query) |
+                Q(arquivos_pdf__titulo__icontains=query) |
+                Q(videos_youtube__titulo__icontains=query)
+            ).distinct()
+        else:
+            materiais = MaterialApoio.objects.all()
+
+        serializer = MaterialApoioSerializer(materiais, many=True)
+
+        if not materiais.exists():
+            return Response([], status=status.HTTP_200_OK)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
