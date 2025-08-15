@@ -5,7 +5,7 @@ from materialApoio.models import VideoYoutube, ArquivoPdf, MaterialApoio, MapaMe
 class MapaMentalSerializer(serializers.ModelSerializer):
     class Meta:
         model = MapaMental
-        fields = ['id', 'mapaMental','titulo','descricao']
+        fields = ['id', 'mapa_mental','titulo','descricao']
 
 class VideoYoutubeSerializer(serializers.ModelSerializer):
     class Meta:
