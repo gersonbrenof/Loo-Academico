@@ -17,7 +17,7 @@ class RespostaSerializer(serializers.ModelSerializer):
 class ResponderTopicoSerializer(serializers.ModelSerializer):
     forumdetalhe = ForumSerializer(source='forum', read_only=True)
     aluno = AlunoSerializer(read_only=True)
-
+    
     class Meta:
         model = ResponderTopico
         fields = ['id', 'forumdetalhe', 'respostaForum', 'data_resposta', 'aluno']
@@ -25,10 +25,10 @@ class ResponderTopicoSerializer(serializers.ModelSerializer):
 
 class ExibirResponderTopicoSerializer(serializers.ModelSerializer):
     aluno = AlunoSerializer(read_only=True)
-
+    foto_perfil = serializers.SerializerMethodField()
     class Meta:
         model = ResponderTopico
-        fields = ['id', 'respostaForum', 'data_resposta', 'aluno']
+        fields = ['id', 'respostaForum', 'data_resposta', 'aluno','foto_perfil']
 
 class ForumExibirSerializer(serializers.ModelSerializer):
     nome_do_aluno = serializers.CharField(source='aluno.nomeAluno', read_only=True)

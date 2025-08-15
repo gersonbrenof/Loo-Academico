@@ -5,17 +5,17 @@ from materialApoio.models import VideoYoutube, ArquivoPdf, MaterialApoio, MapaMe
 class MapaMentalSerializer(serializers.ModelSerializer):
     class Meta:
         model = MapaMental
-        fields = ['id', 'mapaMental']
+        fields = ['id', 'mapaMental','titulo','descricao']
 
 class VideoYoutubeSerializer(serializers.ModelSerializer):
     class Meta:
         model = VideoYoutube
-        fields = ['id', 'link_youtube']
+        fields = ['id', 'link_youtube','titulo','descricao']
 
 class ArquivoPdfSerializer(serializers.ModelSerializer):
     class Meta:
         model = ArquivoPdf
-        fields = ['id', 'arquivo']
+        fields = ['id', 'arquivo','titulo','descricao']
 
 class MaterialApoioSerializer(serializers.ModelSerializer):
     videos_youtube = VideoYoutubeSerializer(many=True, read_only=True)
