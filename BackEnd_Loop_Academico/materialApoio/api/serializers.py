@@ -20,11 +20,14 @@ class ArquivoPdfSerializer(serializers.ModelSerializer):
 class MaterialApoioSerializer(serializers.ModelSerializer):
     videos_youtube = VideoYoutubeSerializer(many=True, read_only=True)
     arquivos_pdf = ArquivoPdfSerializer(many=True, read_only=True)
-    mapa_mental = MapaMentalSerializer(many = True, read_only=True)
+    mapas_mentais = MapaMentalSerializer(many=True, read_only=True)  # <-- corrigido
 
     class Meta:
         model = MaterialApoio
-        fields = ['id', 'titulo', 'descricao', 'quantidade_conteudo', 'videos_youtube', 'arquivos_pdf', 'mapa_mental', 'visualizacoes']
+        fields = [
+            'id', 'titulo', 'descricao', 'quantidade_conteudo',
+            'videos_youtube', 'arquivos_pdf', 'mapas_mentais', 'visualizacoes'
+        ]
     def update(self, instance, validated_data):
         # Atualizar o material de apoio com os dados fornecidos
         instance = super().update(instance, validated_data)
