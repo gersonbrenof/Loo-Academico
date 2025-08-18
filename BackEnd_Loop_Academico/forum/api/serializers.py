@@ -17,19 +17,33 @@ class RespostaSerializer(serializers.ModelSerializer):
 class ResponderTopicoSerializer(serializers.ModelSerializer):
     forumdetalhe = ForumSerializer(source='forum', read_only=True)
     aluno = AlunoSerializer(read_only=True)
-    
+    foto_perfil = serializers.SerializerMethodField()
+
     class Meta:
         model = ResponderTopico
-        fields = ['id', 'forumdetalhe', 'respostaForum', 'data_resposta', 'aluno']
-        read_only_fields = ['forumdetalhe', 'data_resposta', 'aluno']
-
+        fields = [
+            'id',
+            'forumdetalhe',
+            'respostaForum',
+            'data_resposta',
+            'aluno',
+            'foto_perfil',  
+        ]
+        read_only_fields = ['forumdetalhe', 'data_resposta', 'aluno', 'foto_perfil']
+    def get_foto_perfil(self, obj):
+        if obj.aluno and hasattr(obj.aluno, 'perfil') and obj.aluno.perfil.fotoPerfil:
+            return obj.aluno.perfil.fotoPerfil.url
+        return None
 class ExibirResponderTopicoSerializer(serializers.ModelSerializer):
     aluno = AlunoSerializer(read_only=True)
     foto_perfil = serializers.SerializerMethodField()
     class Meta:
         model = ResponderTopico
         fields = ['id', 'respostaForum', 'data_resposta', 'aluno','foto_perfil']
-
+    def get_foto_perfil(self, obj):
+        if obj.aluno and hasattr(obj.aluno, 'perfil') and obj.aluno.perfil.fotoPerfil:
+            return obj.aluno.perfil.fotoPerfil.url
+        return None
 class ForumExibirSerializer(serializers.ModelSerializer):
     nome_do_aluno = serializers.CharField(source='aluno.nomeAluno', read_only=True)
     foto_perfil = serializers.SerializerMethodField()

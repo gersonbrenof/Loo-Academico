@@ -1,7 +1,7 @@
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from desempenho.models import Desempenho
-from desempenho.api.serializers import DesempenhoSerializer
+from desempenho.api.serializers import DesempenhoSerializer, ListaDesempenhoSerializer, ListaExercicio, Exercicio, ResponderExercicio
 from rest_framework.exceptions import PermissionDenied
 from exercicio.models import ResponderExercicio
 class DesempenhoDetailView(generics.RetrieveAPIView):
@@ -55,3 +55,25 @@ class DesempenhoDetailView(generics.RetrieveAPIView):
 
         # Salve o desempenho atualizado
         desempenho.save()
+class DesempenhoListaView(generics.ListAPIView):
+    serializer_class = ListaDesempenhoSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """
+        Retorna todas as listas de exercícios relacionadas ao aluno logado.
+        """
+        aluno = getattr(self.request.user, 'aluno', None)
+        if aluno is None:
+            return ListaExercicio.objects.none()
+
+        # Retorna todas as listas que têm exercícios (relacionadas ao aluno pela turma)
+        return ListaExercicio.objects.all().prefetch_related('exercicios')
+    
+    def get_serializer_context(self):
+        """
+        Passa o request no contexto para o serializer (necessário para calcular o status dos exercícios).
+        """
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
