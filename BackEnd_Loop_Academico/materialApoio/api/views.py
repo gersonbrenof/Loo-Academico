@@ -5,44 +5,23 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import action
 from materialApoio.models import VideoYoutube, ArquivoPdf
-from materialApoio.api.serializers import VideoYoutubeSerializer, ArquivoPdfSerializer, MaterialApoio, MaterialApoioSerializer
+from materialApoio.api.serializers import VideoYoutubeSerializer, ArquivoPdfSerializer, MaterialApoio, MaterialApoioSerializer, VisualizacaoMaterial
 from materialApoio.api.serializers import MapaMental, MapaMentalSerializer
+from django.db.models import Q
 class MaterialApoioViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = MaterialApoio.objects.all()
     serializer_class = MaterialApoioSerializer
+    permission_classes = [IsAuthenticated]
 
     def retrieve(self, request, *args, **kwargs):
-        # Obtém o objeto material de apoio usando o método original
-        material_apoio = self.get_object()
+        material = self.get_object()
+        usuario = request.user
 
-        # Incrementar o contador de visualizações
-        material_apoio.visualizacoes += 1
-        material_apoio.save()  # Salva a nova contagem de visualizações no banco de dados
+        # Cria a visualização apenas se o usuário ainda não tiver visto
+        VisualizacaoMaterial.objects.get_or_create(usuario=usuario, material=material)
 
-        # Calcula e atualiza a quantidade de conteúdo (se necessário)
-        material_apoio.calcular_quantidade_conteudo()
-
-        # Serializa o objeto atualizado
-        serializer = self.get_serializer(material_apoio)
-
-        # Retorna a resposta com os dados atualizados
+        serializer = self.get_serializer(material, context={'request': request})
         return Response(serializer.data)
-
-    def list(self, request, *args, **kwargs):
-        # Obtém a lista de materiais de apoio
-        queryset = self.get_queryset()
-
-        # Calcula e atualiza a quantidade de conteúdo para cada material de apoio
-        for material_apoio in queryset:
-            material_apoio.calcular_quantidade_conteudo()
-            material_apoio.save()  # Garante que a quantidade de conteúdo seja salva
-
-        # Serializa a lista de materiais de apoio atualizados
-        serializer = self.get_serializer(queryset, many=True)
-
-        # Retorna a resposta com os dados atualizados
-        return Response(serializer.data)
-    
 
 class VideoYoutubeViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = VideoYoutube.objects.all()
@@ -57,45 +36,57 @@ class ArquivoPdfViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ArquivoPdfSerializer
 
 class MaterialApoioSearchView(APIView):
+    """
+    Busca por Material de Apoio pelo título.
+    Retorna apenas materiais cujo título contém a query.
+    """
     def get(self, request, *args, **kwargs):
-        # Obtém o parâmetro de busca do request
         query = request.query_params.get('titulo', '').strip()
-        
-        # Realiza a busca por materiais cujo título contém a query
+
         if query:
             materiais = MaterialApoio.objects.filter(titulo__icontains=query)
         else:
-            materiais = MaterialApoio.objects.all()
-        
-        # Serializa os dados encontrados
-        serializer = MaterialApoioSerializer(materiais, many=True)
-        
-        # Se nenhum material for encontrado, retorna uma lista vazia
-        if not materiais:
-            return Response([], status=status.HTTP_200_OK)
-        
-        # Retorna os dados serializados como resposta
-        return Response(serializer.data, status=status.HTTP_200_OK)
-class MaterialApoioAdvancedSearchView(APIView):
-    """
-    Busca por Material de Apoio incluindo títulos de Mapas Mentais, PDFs e Vídeos do YouTube.
-    """
-    def get(self, request, *args, **kwargs):
-        query = request.query_params.get('titulo', '').strip()
-
-        if query:
-            materiais = MaterialApoio.objects.filter(
-                Q(titulo__icontains=query) |
-                Q(mapas_mentais__titulo__icontains=query) |
-                Q(arquivos_pdf__titulo__icontains=query) |
-                Q(videos_youtube__titulo__icontains=query)
-            ).distinct()
-        else:
-            materiais = MaterialApoio.objects.all()
-
-        serializer = MaterialApoioSerializer(materiais, many=True)
+            materiais = MaterialApoio.objects.none()  # Retorna vazio se não houver query
 
         if not materiais.exists():
             return Response([], status=status.HTTP_200_OK)
 
+        serializer = MaterialApoioSerializer(materiais, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+class MaterialApoioAdvancedSearchView(APIView):
+    """
+    Busca por Material de Apoio incluindo títulos de Mapas Mentais, PDFs e Vídeos do YouTube.
+    Filtra cada conteúdo pelo título da query.
+    """
+    def get(self, request, *args, **kwargs):
+        query = request.query_params.get('titulo', '').strip()
+
+        if not query:
+            return Response([], status=status.HTTP_200_OK)
+
+        materiais = MaterialApoio.objects.filter(
+            Q(titulo__icontains=query) |
+            Q(mapas_mentais__titulo__icontains=query) |
+            Q(arquivos_pdf__titulo__icontains=query) |
+            Q(videos_youtube__titulo__icontains=query)
+        ).distinct()
+
+        resultado = []
+        for mat in materiais:
+            videos = mat.videos_youtube.filter(titulo__icontains=query)
+            pdfs = mat.arquivos_pdf.filter(titulo__icontains=query)
+            mapas = mat.mapas_mentais.filter(titulo__icontains=query)
+
+            if videos.exists() or pdfs.exists() or mapas.exists() or query.lower() in mat.titulo.lower():
+                resultado.append({
+                    "id": mat.id,
+                    "titulo": mat.titulo,
+                    "descricao": mat.descricao,
+                    "quantidade_conteudo": mat.quantidade_conteudo,
+                    "videos_youtube": [{"id": v.id, "link_youtube": v.link_youtube, "titulo": v.titulo, "descricao": v.descricao} for v in videos],
+                    "arquivos_pdf": [{"id": p.id, "arquivo": p.arquivo.url, "titulo": p.titulo, "descricao": p.descricao} for p in pdfs],
+                    "mapas_mentais": [{"id": m.id, "mapa_mental": m.mapa_mental.url, "titulo": m.titulo, "descricao": m.descricao} for m in mapas],
+                    "visualizacoes": mat.visualizacoes,
+                })
+
+        return Response(resultado, status=status.HTTP_200_OK)

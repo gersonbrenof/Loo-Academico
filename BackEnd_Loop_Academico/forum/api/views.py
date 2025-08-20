@@ -6,7 +6,7 @@ from forum.api.serializers import ForumSerializer, ResponderTopicoSerializer, Fo
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
-
+from rest_framework.exceptions import PermissionDenied
 class ForumExibirViewSet(viewsets.ModelViewSet):
     queryset = Forum.objects.all()
     serializer_class = ForumExibirSerializer
@@ -18,6 +18,7 @@ class ForumExibirViewSet(viewsets.ModelViewSet):
 class ForumViewSet(viewsets.ModelViewSet):
     """
     Cria ou edita fóruns associando automaticamente o aluno logado.
+    Apenas o criador pode editar ou deletar o fórum.
     """
     queryset = Forum.objects.all()
     serializer_class = ForumSerializer
@@ -26,6 +27,15 @@ class ForumViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         aluno = self.request.user.aluno
         serializer.save(aluno=aluno)
+
+    def check_object_permissions(self, request, obj):
+        """
+        Permite que apenas o criador possa editar ou deletar.
+        """
+        if request.method in ['PUT', 'PATCH', 'DELETE']:
+            if obj.aluno != request.user.aluno:
+                raise PermissionDenied("Você não tem permissão para editar ou deletar este fórum.")
+        return super().check_object_permissions(request, obj)
 
 
 class ResponderTopicoListCreateView(mixins.ListModelMixin,

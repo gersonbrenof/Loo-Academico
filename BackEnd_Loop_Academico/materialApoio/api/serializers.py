@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from materialApoio.models import VideoYoutube, ArquivoPdf, MaterialApoio, MapaMental
+from materialApoio.models import VideoYoutube, ArquivoPdf, MaterialApoio, MapaMental, VisualizacaoMaterial
 
 
 class MapaMentalSerializer(serializers.ModelSerializer):
@@ -20,17 +20,21 @@ class ArquivoPdfSerializer(serializers.ModelSerializer):
 class MaterialApoioSerializer(serializers.ModelSerializer):
     videos_youtube = VideoYoutubeSerializer(many=True, read_only=True)
     arquivos_pdf = ArquivoPdfSerializer(many=True, read_only=True)
-    mapas_mentais = MapaMentalSerializer(many=True, read_only=True)  # <-- corrigido
+    mapas_mentais = MapaMentalSerializer(many=True, read_only=True)
+    
+    visualizado_pelo_usuario = serializers.SerializerMethodField()
 
     class Meta:
         model = MaterialApoio
         fields = [
             'id', 'titulo', 'descricao', 'quantidade_conteudo',
-            'videos_youtube', 'arquivos_pdf', 'mapas_mentais', 'visualizacoes'
+            'videos_youtube', 'arquivos_pdf', 'mapas_mentais',
+            'visualizado_pelo_usuario'
         ]
-    def update(self, instance, validated_data):
-        # Atualizar o material de apoio com os dados fornecidos
-        instance = super().update(instance, validated_data)
-        # Calcular a quantidade de conteúdo
-        instance.calcular_quantidade_conteudo()
-        return instance
+
+    def get_visualizado_pelo_usuario(self, obj):
+        user = self.context.get('request').user
+        if user.is_anonymous:
+            return False
+        # Verifica se o usuário já visualizou o material
+        return obj.visualizacoes_usuario.filter(usuario=user).exists()
