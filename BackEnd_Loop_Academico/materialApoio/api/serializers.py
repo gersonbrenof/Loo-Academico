@@ -33,7 +33,10 @@ class MaterialApoioSerializer(serializers.ModelSerializer):
         ]
 
     def get_visualizado_pelo_usuario(self, obj):
-        user = self.context.get('request').user
+        request = self.context.get('request')
+        if not request or not hasattr(request, 'user'):
+            return False  # request ou user não disponível
+        user = request.user
         if user.is_anonymous:
             return False
         # Verifica se o usuário já visualizou o material
