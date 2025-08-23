@@ -22,16 +22,10 @@ class MaterialApoioViewSet(viewsets.ReadOnlyModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         material = self.get_object()
-        usuario = request.user
-
-        # Verifica se o usuário tem perfil de Aluno
-        if not hasattr(usuario, 'aluno'):
-            return Response({"error": "Usuário não possui perfil de aluno."}, status=400)
-
-        aluno = usuario.aluno
+        usuario = request.user  # instância de User
 
         # Cria a visualização apenas se ainda não existir
-        VisualizacaoMaterial.objects.get_or_create(usuario=aluno, material=material)
+        VisualizacaoMaterial.objects.get_or_create(usuario=usuario, material=material)
 
         serializer = self.get_serializer(material, context={'request': request})
         return Response(serializer.data)
